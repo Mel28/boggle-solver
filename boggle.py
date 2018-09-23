@@ -60,10 +60,6 @@ def path_to_word(grid, path):
     return ''.join([grid[p] for p in path])
     
     
-def word_in_dictionary(word, dict):
-    return word in dict
-    
-    
 def search(grid, dictionary):
     """
     Search through the paths to locate words by matching
@@ -71,11 +67,14 @@ def search(grid, dictionary):
     """
     neighbours = all_grid_neighbours(grid)
     paths = []
+    full_words, stems = dictionary
     
     def do_search(path):
         word = path_to_word(grid, path)
-        if word_in_dictionary(word, dictionary):
+        if word in full_words:
             paths.append(path)
+        if word not in stems:
+            return
         for next_pos in neighbours[path[-1]]:
            if next_pos not in path:
             do_search(path +[next_pos])
@@ -93,8 +92,17 @@ def get_dictionary(dictionary_file):
     """
     Load Dictionary file
     """
+    full_words, stems = set(), set()
+    
     with open(dictionary_file) as f:
-        return {w.strip().upper() for w in f}
+        for word in f:
+            word = word.strip().upper()
+            full_words.add(word)
+            
+            for i in range(1, len(word)):
+                stems.add(word[:i])
+                
+    return full_words, stems
         
 def main():
     """
